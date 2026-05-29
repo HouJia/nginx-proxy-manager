@@ -10,8 +10,6 @@ import proxyHostModel from "/app/models/proxy_host.js";
 import internalNginx from "/app/internal/nginx.js";
 
 const H = "192.168.0.6";
-const SUBAPI = "https://houjia.mycloudnas.com:44/subapi";
-const SUBAPI_SUB = `${SUBAPI}/sub?`;
 const now = () => new Date().toISOString().slice(0, 19).replace("T", " ");
 
 const welcomeDir = "/data/nginx/custom/welcome";
@@ -87,62 +85,27 @@ const serverAdvanced = [
 	"port_in_redirect off;",
 	"location = /index { return 301 $scheme://$http_host/index/; }",
 	"location ^~ /index/ { alias /data/nginx/custom/welcome/; index index.html; }",
-	"location = /subc { return 301 $scheme://$http_host/subapi; }",
-	// /subapi = 版本；/subapi/sub?、/subapi/version 等 = subconverter 全 API
-	[
-		"location = /subapi {",
-		`proxy_set_header Host ${H}:25500;`,
-		`proxy_pass http://${H}:25500/version;`,
-		"}",
-	].join("\n"),
+	"location = /subc { return 301 $scheme://$http_host/subapi/version; }",
+	// /subapi、/subapi/ → 规范 URL；其余 /subapi/* 反代 subconverter
+	"location = /subapi { return 301 $scheme://$http_host/subapi/version; }",
+	"location = /subapi/ { return 301 $scheme://$http_host/subapi/version; }",
 	[
 		"location ^~ /subapi/ {",
 		`proxy_set_header Host ${H}:25500;`,
+		"proxy_set_header X-Forwarded-Prefix /subapi;",
 		"rewrite ^/subapi/(.*)$ /$1 break;",
 		`proxy_pass http://${H}:25500;`,
 		"}",
 	].join("\n"),
 	"location = /subw { return 301 $scheme://$http_host/subw/; }",
+	// sub-web 以 VITE_BASE_PATH=/subw/ 构建：剥 /subw/ 前缀反代到容器根路径
 	[
 		"location ^~ /subw/ {",
 		`proxy_set_header Host ${H}:58081;`,
-		"proxy_set_header Accept-Encoding \"\";",
 		"proxy_set_header X-Forwarded-Host $http_host;",
 		"proxy_set_header X-Forwarded-Proto $scheme;",
+		"proxy_set_header X-Forwarded-Prefix /subw;",
 		`proxy_pass http://${H}:58081/;`,
-		"sub_filter_once off;",
-		"sub_filter_types text/html;",
-		'sub_filter \'src="/assets/index-DCMRZqjD.js"\' \'src="/assets/index-DCMRZqjD.js?v=subw4"\';',
-		"}",
-	].join("\n"),
-	// subweb 写死根路径；须在 JS 里把 Vue Router base:"/" 改为 base:"/subw/"
-	[
-		"location ^~ /assets/ {",
-		`proxy_set_header Host ${H}:58081;`,
-		"proxy_set_header Accept-Encoding \"\";",
-		`proxy_pass http://${H}:58081/assets/;`,
-		"add_header Cache-Control \"no-store\" always;",
-		"sub_filter_once off;",
-		"sub_filter_types application/javascript;",
-		'sub_filter \'base:"/"\' \'base:"/subw/"\';',
-		`sub_filter 'http://houjia.mycloudnas.com:25500/sub?' '${SUBAPI_SUB}';`,
-		`sub_filter 'http://${H}:25500/sub?' '${SUBAPI_SUB}';`,
-		`sub_filter 'https://houjia.mycloudnas.com:44/subc/sub?' '${SUBAPI_SUB}';`,
-		`sub_filter 'http://houjia.mycloudnas.com:25500/' '${SUBAPI}/';`,
-		`sub_filter 'http://${H}:25500/' '${SUBAPI}/';`,
-		`sub_filter 'https://houjia.mycloudnas.com:44/subc/' '${SUBAPI}/';`,
-		'sub_filter \'backendOptions:[{value:"http://127.0.0.1:25500/sub?"}]\' \'backendOptions:[{value:"' +
-			SUBAPI_SUB +
-			'"},{value:"http://127.0.0.1:25500/sub?"}]\';',
-		'sub_filter \'placeholder:"动动小手，（建议）自行搭建后端服务。例：http://127.0.0.1:25500/sub?"\' \'placeholder:"动动小手，（建议）自行搭建后端服务。例：' +
-			SUBAPI_SUB +
-			'"\';',
-		"}",
-	].join("\n"),
-	[
-		"location ^~ /favicons/ {",
-		`proxy_set_header Host ${H}:58081;`,
-		`proxy_pass http://${H}:58081/favicons/;`,
 		"}",
 	].join("\n"),
 	"location = /qnap { return 301 $scheme://$http_host/cgi-bin/login.html; }",
