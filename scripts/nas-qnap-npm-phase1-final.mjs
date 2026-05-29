@@ -1,15 +1,16 @@
 /**
- * houjia.mycloudnas.com:44 — 简化策略
+ * NAS 家庭反代 — 简化策略（示例内网 IP / 域名请按环境变量覆盖）
  * - 仅显式配置：/、/jellyfin/、/subapi、/subw/、/webdav/、/home/
- * - 其余路径原样反代到 QNAP 5001（QNAP 登录后会用 /cgi-bin/、/libs/ 等根路径）
- * 容器内: node /tmp/npm-phase1-final.mjs
+ * - 其余路径原样反代到 QNAP 5001
+ * 容器内: NAS_LAN_IP=192.168.x.x NAS_PUBLIC_HOST=nas.example.com node /tmp/npm-phase1-final.mjs
  */
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 import proxyHostModel from "/app/models/proxy_host.js";
 import internalNginx from "/app/internal/nginx.js";
 
-const H = "192.168.0.6";
+const H = process.env.NAS_LAN_IP || "192.168.1.100";
+const PUBLIC_HOST = process.env.NAS_PUBLIC_HOST || "nas.example.com";
 const now = () => new Date().toISOString().slice(0, 19).replace("T", " ");
 
 const welcomeDir = "/data/nginx/custom/welcome";
@@ -17,7 +18,7 @@ fs.mkdirSync(welcomeDir, { recursive: true });
 fs.writeFileSync(
 	`${welcomeDir}/index.html`,
 	`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>houjia.mycloudnas.com</title><style>body{font-family:system-ui,sans-serif;max-width:40rem;margin:2.5rem auto;padding:0 1rem}h1{font-size:1.25rem}a{color:#0b57d0}</style>
+<title>${PUBLIC_HOST}</title><style>body{font-family:system-ui,sans-serif;max-width:40rem;margin:2.5rem auto;padding:0 1rem}h1{font-size:1.25rem}a{color:#0b57d0}</style>
 </head><body><h1>家庭服务入口</h1><p>请用 <b>https</b> 访问端口 <b>44</b>：</p>
 <ul><li><a href="/jellyfin/">Jellyfin</a></li><li><a href="/subapi">Subconverter</a></li>
 <li><a href="/subw/">Subweb</a></li>
