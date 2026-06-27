@@ -35,7 +35,7 @@
     section.misc .card strong { font-size: .75rem; font-weight: 600; margin-bottom: .1rem; }
     section.misc .card .desc-line { font-size: .65rem; margin-bottom: .25rem; line-height: 1.25; }
     section.misc .url-row { display: flex; flex-direction: row; align-items: center; gap: .35rem; flex-wrap: nowrap; width: 100%; min-width: 0; }
-    section.misc .url-text { flex: 1 1 auto; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left; unicode-bidi: plaintext; font-size: .62rem; color: var(--muted); cursor: pointer; line-height: 1.3; user-select: text; }
+    section.misc .url-text { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; font-size: .62rem; color: var(--muted); cursor: pointer; line-height: 1.3; user-select: text; font-family: ui-monospace, monospace; }
     section.misc .url-text:hover { color: var(--text); }
     section.misc .copy-btn { flex: 0 0 auto; margin-left: auto; font-size: .62rem; padding: .15rem .35rem; border-radius: .3rem; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; white-space: nowrap; }
     section.misc .copy-btn:hover { border-color: var(--link); color: var(--link); }
@@ -75,12 +75,17 @@
       <div class="grid" id="svc-misc"></div>
     </section>
 
-    <footer>导航页 <code>/index/</code> · LAN {{LAN_IP}}</footer>
+    <footer>公网 <code>https://{{PUBLIC_HOST}}:44/index/</code> · 内网 <code>http://{{LAN_IP}}:88/index/</code></footer>
   </div>
   <div class="toast" id="toast">已复制</div>
   <script>
     const LAN = "{{LAN_IP}}";
     const HOST = "{{PUBLIC_HOST}}";
+    const LAN_INDEX = "http://" + LAN + ":88/index/";
+    function ellipsisStart(str, maxLen) {
+      if (!str || str.length <= maxLen) return str;
+      return "\u2026" + str.slice(-(maxLen - 1));
+    }
     const services = {
       sub: [
         { name: "Subconverter API", desc: "订阅转换 /subapi", remote: "/subapi/version", local: "http://" + LAN + ":25500/sub?" },
@@ -121,9 +126,10 @@
         '<span class="badge">' + (mode === "local" ? "LAN" : "Remote") + '</span></a>';
     }
     function miscCard(s, href) {
+      const shown = ellipsisStart(href, 38);
       return '<div class="card">' +
         '<div class="card-body"><strong>' + s.name + '</strong><span class="desc-line">' + s.desc + '</span>' +
-        '<div class="url-row"><span class="url-text" data-url="' + href.replace(/"/g, "&quot;") + '" title="' + href.replace(/"/g, "&quot;") + '">' + href + '</span>' +
+        '<div class="url-row"><span class="url-text" data-url="' + href.replace(/"/g, "&quot;") + '" title="' + href.replace(/"/g, "&quot;") + '">' + shown + '</span>' +
         '<button type="button" class="copy-btn" data-url="' + href.replace(/"/g, "&quot;") + '">复制</button></div></div></div>';
     }
     function bindMiscCopy(root) {
@@ -138,7 +144,7 @@
     function render() {
       const mode = document.getElementById("mode").value;
       document.getElementById("modeHint").textContent = mode === "local"
-        ? "Local：直连 NAS 端口，适合内网设备，不经过公网域名。"
+        ? "Local：各服务直连内网端口。本页内网入口 " + LAN_INDEX
         : "Remote：链接经 NPM 反代（域名 :44），适合外网或统一入口。";
       document.getElementById("svc-sub").innerHTML = services.sub.map(s => linkCard(s, url(s, mode), mode)).join("");
       document.getElementById("svc-nas").innerHTML = services.nas.map(s => linkCard(s, url(s, mode), mode)).join("");
