@@ -10,37 +10,47 @@
       :root { --bg: #0f1117; --card: #1a1d27; --text: #e8eaed; --muted: #9aa0a6; --link: #8ab4f8; --border: #3c4043; }
     }
     * { box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem 1rem 3rem; }
-    .wrap { max-width: 42rem; margin: 0 auto; }
-    h1 { font-size: 1.35rem; margin: 0 0 .25rem; }
-    .sub { color: var(--muted); font-size: .9rem; margin-bottom: 1.25rem; }
-    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-bottom: 1.25rem; padding: .75rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: .75rem; }
-    .toolbar label { font-size: .875rem; font-weight: 600; }
-    select { padding: .4rem .65rem; border-radius: .5rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: .875rem; }
-    .hint { font-size: .8rem; color: var(--muted); flex: 1 1 100%; }
-    section { margin-bottom: 1.25rem; }
-    section h2 { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 .5rem; }
-    .grid { display: grid; gap: .5rem; }
-    .card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: .65rem; text-decoration: none; color: inherit; transition: border-color .15s; }
-    .card:hover { border-color: var(--link); }
-    .card strong { font-size: .95rem; display: block; }
-    .card span { font-size: .78rem; color: var(--muted); word-break: break-all; }
-    .badge { font-size: .7rem; padding: .15rem .45rem; border-radius: .35rem; background: var(--bg); color: var(--muted); white-space: nowrap; }
-    footer { margin-top: 2rem; font-size: .75rem; color: var(--muted); }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.25rem 1rem 2.5rem; }
+    .wrap { max-width: 40rem; margin: 0 auto; }
+    h1 { font-size: 1.25rem; margin: 0 0 .2rem; }
+    .sub { color: var(--muted); font-size: .85rem; margin-bottom: 1rem; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: 1rem; padding: .65rem .85rem; background: var(--card); border: 1px solid var(--border); border-radius: .65rem; }
+    .toolbar label { font-size: .8rem; font-weight: 600; }
+    select { padding: .35rem .55rem; border-radius: .45rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: .8rem; }
+    .hint { font-size: .75rem; color: var(--muted); flex: 1 1 100%; }
+    section { margin-bottom: 1rem; }
+    section h2 { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 .45rem; }
+    section.other h2 { font-size: .65rem; color: var(--muted); opacity: .85; }
+    .grid { display: grid; gap: .45rem; }
+    .card { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; padding: .7rem .85rem; background: var(--card); border: 1px solid var(--border); border-radius: .55rem; transition: border-color .15s, box-shadow .15s; }
+    .card:hover { border-color: var(--link); box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+    .card-body { min-width: 0; flex: 1; }
+    .card strong { font-size: .9rem; display: block; margin-bottom: .15rem; }
+    .card .desc { font-size: .75rem; color: var(--muted); margin-bottom: .35rem; }
+    .card a.url { font-size: .72rem; color: var(--link); word-break: break-all; text-decoration: none; border-bottom: 1px dashed transparent; }
+    .card a.url:hover { border-bottom-color: var(--link); }
+    .card a.url.copied { color: #0d7d3b; }
+    section.other .card { padding: .45rem .65rem; background: transparent; border-style: dashed; opacity: .88; }
+    section.other .card strong { font-size: .78rem; font-weight: 500; }
+    section.other .card .desc { font-size: .68rem; }
+    section.other .card a.url { font-size: .65rem; }
+    footer { margin-top: 1.5rem; font-size: .7rem; color: var(--muted); }
+    .toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); padding: .4rem .75rem; border-radius: .5rem; font-size: .75rem; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>家庭服务入口</h1>
-    <p class="sub">HTTPS 端口 <b>44</b> · 主机 <b>{{PUBLIC_HOST}}</b></p>
+    <p class="sub">HTTPS 端口 <b>44</b> · <b>{{PUBLIC_HOST}}</b></p>
 
     <div class="toolbar">
       <label for="mode">访问方式</label>
       <select id="mode" aria-label="访问方式">
-        <option value="remote">Remote（公网域名 :44）</option>
-        <option value="local">Local（局域网 IP / 端口）</option>
+        <option value="remote">Remote（公网 :44）</option>
+        <option value="local">Local（局域网）</option>
       </select>
-      <span class="hint" id="modeHint">Remote：链接经 NPM 反代，适合外网或统一域名。</span>
+      <span class="hint" id="modeHint">点击链接复制地址，不会自动跳转。</span>
     </div>
 
     <section>
@@ -48,26 +58,35 @@
       <div class="grid" id="svc-sub"></div>
     </section>
     <section>
-      <h2>媒体与其它</h2>
+      <h2>媒体与存储</h2>
+      <div class="grid" id="svc-media"></div>
+    </section>
+    <section class="other">
+      <h2>其它</h2>
       <div class="grid" id="svc-other"></div>
     </section>
 
-    <footer>导航页路径 <code>/index/</code> · LAN IP {{LAN_IP}}</footer>
+    <footer>导航 <code>/index/</code> · LAN {{LAN_IP}}</footer>
   </div>
+  <div class="toast" id="toast">已复制</div>
   <script>
     const LAN = "{{LAN_IP}}";
     const HOST = "{{PUBLIC_HOST}}";
     const services = {
       sub: [
-        { name: "Subconverter API", desc: "订阅转换 /subapi", remote: "/subapi/version", local: "http://" + LAN + ":25500/sub?", tag: "subapi" },
-        { name: "Sub-web", desc: "订阅转换 Web UI", remote: "/subw/", local: "http://" + LAN + ":58081/subw/", tag: "subw" },
-        { name: "妙妙屋", desc: "多用户订阅 / 规则类别", remote: "/mmw/", local: "http://" + LAN + ":8080/mmw/", tag: "mmw" },
-        { name: "Sublink", desc: "轻量按需分流", remote: "/sublink/", local: "http://" + LAN + ":58087/sublink/", tag: "sublink" }
+        { name: "Subconverter API", desc: "订阅转换 /subapi", remote: "/subapi/version", local: "http://" + LAN + ":25500/sub?" },
+        { name: "Sub-web", desc: "订阅转换 Web UI", remote: "/subw/", local: "http://" + LAN + ":58081/subw/" },
+        { name: "妙妙屋", desc: "多用户订阅", remote: "/mmw/", local: "http://" + LAN + ":8080/mmw/" },
+        { name: "Sublink", desc: "轻量按需分流", remote: "/sublink/", local: "http://" + LAN + ":58087/sublink/" }
+      ],
+      media: [
+        { name: "Jellyfin", desc: "媒体库", remote: "/jellyfin/", local: "http://" + LAN + ":8096/" }
       ],
       other: [
-        { name: "Jellyfin", desc: "媒体库", remote: "/jellyfin/", local: "http://" + LAN + ":8096/", tag: "media" },
-        { name: "QNAP 登录", desc: "NAS 管理", remote: "/cgi-bin/login.html", local: "https://" + LAN + ":5001/cgi-bin/login.html", tag: "nas" },
-        { name: "WebDAV", desc: "文件", remote: "/webdav/", local: "https://" + LAN + ":5008/", tag: "webdav" }
+        { name: "QNAP 登录", desc: "管理登录", remote: "/cgi-bin/login.html", local: "https://" + LAN + ":5001/cgi-bin/login.html" },
+        { name: "QNAP 桌面", desc: "NAS 主界面", remote: "/", local: "https://" + LAN + ":5001/" },
+        { name: "WebDAV", desc: "文件", remote: "/webdav/", local: "https://" + LAN + ":5008/" },
+        { name: "WebDAV /home/", desc: "Home 目录", remote: "/home/", local: "https://" + LAN + ":5008/home/" }
       ]
     };
     function url(s, mode) {
@@ -75,18 +94,43 @@
       if (s.remote.startsWith("/")) return "https://" + HOST + ":44" + s.remote;
       return s.remote;
     }
+    function showToast() {
+      const t = document.getElementById("toast");
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1200);
+    }
+    function copyUrl(e, href) {
+      e.preventDefault();
+      navigator.clipboard.writeText(href).then(showToast).catch(() => {
+        prompt("复制链接：", href);
+      });
+    }
+    function cardHtml(s, mode, muted) {
+      const href = url(s, mode);
+      const id = "u-" + Math.random().toString(36).slice(2, 9);
+      return '<div class="card">' +
+        '<div class="card-body"><strong>' + s.name + '</strong>' +
+        '<div class="desc">' + s.desc + '</div>' +
+        '<a class="url" id="' + id + '" href="' + href + '" title="点击复制">' + href + '</a></div></div>';
+    }
+    function bindCopy(root) {
+      root.querySelectorAll("a.url").forEach(a => {
+        a.addEventListener("click", e => {
+          copyUrl(e, a.getAttribute("href"));
+          a.classList.add("copied");
+          setTimeout(() => a.classList.remove("copied"), 800);
+        });
+      });
+    }
     function render() {
       const mode = document.getElementById("mode").value;
       document.getElementById("modeHint").textContent = mode === "local"
-        ? "Local：直连 NAS 端口，适合内网设备，不经过公网域名。"
-        : "Remote：链接经 NPM 反代（域名 :44），适合外网或统一入口。";
-      for (const [id, list] of [["svc-sub", services.sub], ["svc-other", services.other]]) {
-        document.getElementById(id).innerHTML = list.map(s => {
-          const href = url(s, mode);
-          return '<a class="card" href="' + href + '" target="_blank" rel="noopener">' +
-            '<div><strong>' + s.name + '</strong><span>' + s.desc + ' · ' + href + '</span></div>' +
-            '<span class="badge">' + (mode === "local" ? "LAN" : "Remote") + '</span></a>';
-        }).join("");
+        ? "Local：显示内网地址，点击链接复制。"
+        : "Remote：显示公网反代地址，点击链接复制。";
+      for (const [id, list] of [["svc-sub", services.sub], ["svc-media", services.media], ["svc-other", services.other]]) {
+        const el = document.getElementById(id);
+        el.innerHTML = list.map(s => cardHtml(s, mode)).join("");
+        bindCopy(el);
       }
     }
     document.getElementById("mode").addEventListener("change", render);
