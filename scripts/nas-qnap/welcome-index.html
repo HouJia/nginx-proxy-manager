@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{PUBLIC_HOST}} · 家庭服务</title>
+  <style>
+    :root { color-scheme: light dark; --bg: #f6f7fb; --card: #fff; --text: #1a1a1a; --muted: #5f6368; --link: #0b57d0; --border: #e0e3e7; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f1117; --card: #1a1d27; --text: #e8eaed; --muted: #9aa0a6; --link: #8ab4f8; --border: #3c4043; }
+    }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem 1rem 3rem; }
+    .wrap { max-width: 42rem; margin: 0 auto; }
+    h1 { font-size: 1.35rem; margin: 0 0 .25rem; }
+    .sub { color: var(--muted); font-size: .9rem; margin-bottom: 1.25rem; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-bottom: 1.25rem; padding: .75rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: .75rem; }
+    .toolbar label { font-size: .875rem; font-weight: 600; }
+    select { padding: .4rem .65rem; border-radius: .5rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: .875rem; }
+    .hint { font-size: .8rem; color: var(--muted); flex: 1 1 100%; }
+    section { margin-bottom: 1.25rem; }
+    section h2 { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 .5rem; }
+    .grid { display: grid; gap: .5rem; }
+    .card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: .65rem; text-decoration: none; color: inherit; transition: border-color .15s; }
+    .card:hover { border-color: var(--link); }
+    .card strong { font-size: .95rem; display: block; }
+    .card span { font-size: .78rem; color: var(--muted); word-break: break-all; }
+    .badge { font-size: .7rem; padding: .15rem .45rem; border-radius: .35rem; background: var(--bg); color: var(--muted); white-space: nowrap; }
+    footer { margin-top: 2rem; font-size: .75rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>家庭服务入口</h1>
+    <p class="sub">HTTPS 端口 <b>44</b> · 主机 <b>{{PUBLIC_HOST}}</b></p>
+
+    <div class="toolbar">
+      <label for="mode">访问方式</label>
+      <select id="mode" aria-label="访问方式">
+        <option value="remote">Remote（公网域名 :44）</option>
+        <option value="local">Local（局域网 IP / 端口）</option>
+      </select>
+      <span class="hint" id="modeHint">Remote：链接经 NPM 反代，适合外网或统一域名。</span>
+    </div>
+
+    <section>
+      <h2>订阅与分流</h2>
+      <div class="grid" id="svc-sub"></div>
+    </section>
+    <section>
+      <h2>媒体与其它</h2>
+      <div class="grid" id="svc-other"></div>
+    </section>
+
+    <footer>导航页路径 <code>/index/</code> · LAN IP {{LAN_IP}}</footer>
+  </div>
+  <script>
+    const LAN = "{{LAN_IP}}";
+    const HOST = "{{PUBLIC_HOST}}";
+    const services = {
+      sub: [
+        { name: "Subconverter API", desc: "订阅转换 /subapi", remote: "/subapi/version", local: "http://" + LAN + ":25500/sub?", tag: "subapi" },
+        { name: "Sub-web", desc: "订阅转换 Web UI", remote: "/subw/", local: "http://" + LAN + ":58081/subw/", tag: "subw" },
+        { name: "妙妙屋", desc: "多用户订阅 / 规则类别", remote: "/mmw/", local: "http://" + LAN + ":8080/mmw/", tag: "mmw" },
+        { name: "Sublink", desc: "轻量按需分流", remote: "/sublink/", local: "http://" + LAN + ":58087/sublink/", tag: "sublink" }
+      ],
+      other: [
+        { name: "Jellyfin", desc: "媒体库", remote: "/jellyfin/", local: "http://" + LAN + ":8096/", tag: "media" },
+        { name: "QNAP 登录", desc: "NAS 管理", remote: "/cgi-bin/login.html", local: "https://" + LAN + ":5001/cgi-bin/login.html", tag: "nas" },
+        { name: "WebDAV", desc: "文件", remote: "/webdav/", local: "https://" + LAN + ":5008/", tag: "webdav" }
+      ]
+    };
+    function url(s, mode) {
+      if (mode === "local") return s.local;
+      if (s.remote.startsWith("/")) return "https://" + HOST + ":44" + s.remote;
+      return s.remote;
+    }
+    function render() {
+      const mode = document.getElementById("mode").value;
+      document.getElementById("modeHint").textContent = mode === "local"
+        ? "Local：直连 NAS 端口，适合内网设备，不经过公网域名。"
+        : "Remote：链接经 NPM 反代（域名 :44），适合外网或统一入口。";
+      for (const [id, list] of [["svc-sub", services.sub], ["svc-other", services.other]]) {
+        document.getElementById(id).innerHTML = list.map(s => {
+          const href = url(s, mode);
+          return '<a class="card" href="' + href + '" target="_blank" rel="noopener">' +
+            '<div><strong>' + s.name + '</strong><span>' + s.desc + ' · ' + href + '</span></div>' +
+            '<span class="badge">' + (mode === "local" ? "LAN" : "Remote") + '</span></a>';
+        }).join("");
+      }
+    }
+    document.getElementById("mode").addEventListener("change", render);
+    render();
+  </script>
+</body>
+</html>
