@@ -34,12 +34,31 @@
     section.misc .card-body { min-width: 0; flex: 1; }
     section.misc .card strong { font-size: .75rem; font-weight: 600; margin-bottom: .1rem; }
     section.misc .card .desc-line { font-size: .65rem; margin-bottom: .25rem; line-height: 1.25; }
-    section.misc .url-row { display: flex; flex-direction: row; align-items: center; gap: .35rem; flex-wrap: nowrap; width: 100%; min-width: 0; }
-    section.misc .url-text { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; font-size: .62rem; color: var(--muted); cursor: pointer; line-height: 1.3; user-select: text; font-family: ui-monospace, monospace; }
+    section.misc .url-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: .35rem;
+      align-items: start;
+      width: 100%;
+    }
+    section.misc .url-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+      white-space: normal;
+      font-size: .62rem;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1.35;
+      user-select: text;
+      font-family: ui-monospace, monospace;
+    }
     section.misc .url-text:hover { color: var(--text); }
-    section.misc .copy-btn { flex: 0 0 auto; margin-left: auto; font-size: .62rem; padding: .15rem .35rem; border-radius: .3rem; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; white-space: nowrap; }
+    section.misc .copy-btn { flex: 0 0 auto; font-size: .62rem; padding: .15rem .35rem; border-radius: .3rem; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; white-space: nowrap; align-self: start; }
     section.misc .copy-btn:hover { border-color: var(--link); color: var(--link); }
-    footer { margin-top: 2rem; font-size: .75rem; color: var(--muted); }
+    footer { margin-top: 2rem; font-size: .75rem; color: var(--muted); line-height: 1.65; }
+    footer .footer-line { display: block; margin-bottom: .35rem; }
+    footer code { word-break: break-all; }
     .toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); padding: .4rem .75rem; border-radius: .5rem; font-size: .75rem; opacity: 0; pointer-events: none; transition: opacity .2s; }
     .toast.show { opacity: 1; }
   </style>
@@ -75,7 +94,11 @@
       <div class="grid" id="svc-misc"></div>
     </section>
 
-    <footer>公网 <code>https://{{PUBLIC_HOST}}:44/index/</code> · 内网 HTTP <code>http://{{LAN_IP}}:88/index/</code> · 内网 HTTPS <code>https://{{LAN_IP}}:44/index/</code>（自签证书）</footer>
+    <footer>
+      <span class="footer-line">公网 <code>https://{{PUBLIC_HOST}}:44/index/</code></span>
+      <span class="footer-line">内网 HTTP <code>http://{{LAN_IP}}:88/index/</code></span>
+      <span class="footer-line">内网 HTTPS <code>https://{{LAN_IP}}:44/index/</code>（自签证书）</span>
+    </footer>
   </div>
   <div class="toast" id="toast">已复制</div>
   <script>
@@ -83,9 +106,11 @@
     const HOST = "{{PUBLIC_HOST}}";
     const LAN_INDEX_HTTP = "http://" + LAN + ":88/index/";
     const LAN_INDEX_HTTPS = "https://" + LAN + ":44/index/";
-    function ellipsisStart(str, maxLen) {
-      if (!str || str.length <= maxLen) return str;
-      return "\u2026" + str.slice(-(maxLen - 1));
+    function miscCard(s, href) {
+      return '<div class="card">' +
+        '<div class="card-body"><strong>' + s.name + '</strong><span class="desc-line">' + s.desc + '</span>' +
+        '<div class="url-row"><span class="url-text" data-url="' + href.replace(/"/g, "&quot;") + '" title="' + href.replace(/"/g, "&quot;") + '">' + href + '</span>' +
+        '<button type="button" class="copy-btn" data-url="' + href.replace(/"/g, "&quot;") + '">复制</button></div></div></div>';
     }
     const services = {
       sub: [
@@ -125,13 +150,6 @@
       return '<a class="card" href="' + href + '" target="_blank" rel="noopener">' +
         '<div><strong>' + s.name + '</strong><span class="desc-line">' + s.desc + ' · ' + href + '</span></div>' +
         '<span class="badge">' + (mode === "local" ? "LAN" : "Remote") + '</span></a>';
-    }
-    function miscCard(s, href) {
-      const shown = ellipsisStart(href, 38);
-      return '<div class="card">' +
-        '<div class="card-body"><strong>' + s.name + '</strong><span class="desc-line">' + s.desc + '</span>' +
-        '<div class="url-row"><span class="url-text" data-url="' + href.replace(/"/g, "&quot;") + '" title="' + href.replace(/"/g, "&quot;") + '">' + shown + '</span>' +
-        '<button type="button" class="copy-btn" data-url="' + href.replace(/"/g, "&quot;") + '">复制</button></div></div></div>';
     }
     function bindMiscCopy(root) {
       root.querySelectorAll(".url-text, .copy-btn").forEach(el => {
