@@ -75,13 +75,14 @@
       <div class="grid" id="svc-misc"></div>
     </section>
 
-    <footer>公网 <code>https://{{PUBLIC_HOST}}:44/index/</code> · 内网 <code>http://{{LAN_IP}}:88/index/</code></footer>
+    <footer>公网 <code>https://{{PUBLIC_HOST}}:44/index/</code> · 内网 HTTP <code>http://{{LAN_IP}}:88/index/</code> · 内网 HTTPS <code>https://{{LAN_IP}}:44/index/</code>（自签证书）</footer>
   </div>
   <div class="toast" id="toast">已复制</div>
   <script>
     const LAN = "{{LAN_IP}}";
     const HOST = "{{PUBLIC_HOST}}";
-    const LAN_INDEX = "http://" + LAN + ":88/index/";
+    const LAN_INDEX_HTTP = "http://" + LAN + ":88/index/";
+    const LAN_INDEX_HTTPS = "https://" + LAN + ":44/index/";
     function ellipsisStart(str, maxLen) {
       if (!str || str.length <= maxLen) return str;
       return "\u2026" + str.slice(-(maxLen - 1));
@@ -144,7 +145,7 @@
     function render() {
       const mode = document.getElementById("mode").value;
       document.getElementById("modeHint").textContent = mode === "local"
-        ? "Local：各服务直连内网端口。本页内网入口 " + LAN_INDEX
+        ? "Local：各服务直连内网端口。导航页 " + LAN_INDEX_HTTP + " 或 " + LAN_INDEX_HTTPS
         : "Remote：链接经 NPM 反代（域名 :44），适合外网或统一入口。";
       document.getElementById("svc-sub").innerHTML = services.sub.map(s => linkCard(s, url(s, mode), mode)).join("");
       document.getElementById("svc-nas").innerHTML = services.nas.map(s => linkCard(s, url(s, mode), mode)).join("");

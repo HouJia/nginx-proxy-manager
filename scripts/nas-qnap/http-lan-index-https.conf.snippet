@@ -1,0 +1,25 @@
+# LAN HTTPS /index/ + HTTP-on-443 redirect（标记 index-lan-ip-443）
+# 部署：scripts/nas-qnap/deploy-lan-index.sh
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name 192.168.0.6;
+
+    ssl_certificate /data/custom_ssl/lan-ip/fullchain.pem;
+    ssl_certificate_key /data/custom_ssl/lan-ip/privkey.pem;
+
+    error_page 400 497 =302 http://192.168.0.6:88$request_uri;
+
+    access_log /data/logs/index-lan-https_access.log;
+    error_log /data/logs/index-lan-https_error.log warn;
+
+    location = / { return 302 /index/; }
+    location = /index { return 301 /index/; }
+    location ^~ /index/ {
+        alias /data/nginx/custom/welcome/;
+        index index.html;
+    }
+
+    location / { return 404; }
+}
